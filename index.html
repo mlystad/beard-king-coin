@@ -20,7 +20,6 @@
             --mist: rgba(201,168,76,0.08);
         }
 
-```
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html { scroll-behavior: smooth; }
@@ -283,21 +282,42 @@
         margin-bottom: 20px;
     }
 
+    .email-form {
+        display: flex;
+        align-items: stretch;
+        gap: 10px;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .email-input {
+        flex: 1;
+        min-width: 220px;
+        padding: 16px 18px;
+        border: 1px solid var(--gold-dim);
+        background: rgba(13,11,8,0.8);
+        color: var(--parchment);
+        font-family: 'Crimson Text', Georgia, serif;
+        font-size: 1.05rem;
+    }
+
+    .email-input::placeholder { color: rgba(242,232,213,0.45); }
+
     .cta-btn {
         display: inline-block;
         position: relative;
-        padding: 16px 48px;
+        padding: 16px 32px;
         background: transparent;
         color: var(--gold);
         font-family: 'Cinzel', serif;
         font-size: 0.75rem;
         font-weight: 600;
-        letter-spacing: 0.25em;
+        letter-spacing: 0.2em;
         text-transform: uppercase;
-        text-decoration: none;
         border: 1px solid var(--gold-dim);
         transition: all 0.4s ease;
         overflow: hidden;
+        cursor: pointer;
     }
 
     .cta-btn::before {
@@ -330,6 +350,13 @@
         color: rgba(242,232,213,0.3);
     }
 
+    .cta-message {
+        min-height: 1.2em;
+        margin-top: 14px;
+        font-size: 0.95rem;
+        color: var(--gold-light);
+    }
+
     /* Footer */
     footer {
         margin-top: 80px;
@@ -358,17 +385,16 @@
         .page { padding: 40px 20px; }
         .coin { width: 110px; height: 110px; }
         .story p { font-size: 1.1rem; }
-        .cta-btn { padding: 14px 36px; }
+        .email-form { flex-direction: column; }
+        .cta-btn { width: 100%; padding: 14px 20px; }
     }
 </style>
-```
 
 </head>
 <body>
     <div class="ambient"></div>
     <div class="frame"></div>
 
-```
 <main class="page">
 
     <div class="coin-wrap">
@@ -513,9 +539,11 @@
 
     <div class="cta-section">
         <p class="cta-label">The Coins Are Coming</p>
-        <a href="https://forms.gle/PA4KJKwdzPuNzKZK8" target="_blank" class="cta-btn">
-            <span>Pledge Your Allegiance</span>
-        </a>
+        <form class="email-form" id="email-form" action="https://docs.google.com/forms/d/e/1FAIpQLScBkplrgRv8TlfR0x29Kaleyzc_PwohhfnBlwVUoPI1aW13ww/formResponse" method="POST" novalidate>
+            <input class="email-input" type="email" name="emailAddress" id="email" placeholder="you@beardbrotherhood.com" required>
+            <button class="cta-btn" type="submit"><span>Pledge Your Allegiance</span></button>
+        </form>
+        <p class="cta-message" id="cta-message" aria-live="polite"></p>
         <p class="cta-note">Be notified when the first coins are struck.</p>
     </div>
 
@@ -524,7 +552,35 @@
     </footer>
 
 </main>
-```
 
+    <script>
+        const emailForm = document.getElementById('email-form');
+        const ctaMessage = document.getElementById('cta-message');
+
+        emailForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(emailForm);
+            const email = formData.get('emailAddress');
+
+            if (!email) {
+                ctaMessage.textContent = 'Please enter an email address.';
+                return;
+            }
+
+            try {
+                await fetch(emailForm.action, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: new URLSearchParams(formData)
+                });
+
+                emailForm.reset();
+                ctaMessage.textContent = 'You are in. We\'ll notify you when coins are struck.';
+            } catch (error) {
+                ctaMessage.textContent = 'Something went wrong. Please try again.';
+            }
+        });
+    </script>
 </body>
 </html>
