@@ -41,8 +41,34 @@ jobs:
           GA_MEASUREMENT_ID: G-TEST12345
           CONTACT_EMAIL: hello@example.com
 
+  design:
+    # Design guardrails (docs/DESIGN.md): static rules, browser accessibility checks, and
+    # the tests that prove the checks fail when they should. Builds with every option on,
+    # which is the page set with the most going on (analytics notice, Amazon links, forms).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build with every option on
+        run: node scripts/build.mjs
+        env:
+          SIGNUP_MODE: api
+          EMAIL_PROVIDER: mailchimp
+          GA_MEASUREMENT_ID: G-TEST12345
+          CONTACT_EMAIL: hello@example.com
+      - name: Static design rules
+        run: node scripts/check-design.mjs
+      - name: Browser checks (axe, 320px reflow, focus, target size, reduced motion)
+        run: node scripts/check-a11y.mjs
+      - name: Tests for the checks themselves
+        run: npm run test:design
+
   deploy:
-    needs: check
+    needs: [check, design]
     if: >-
       vars.FIREBASE_PROJECT_ID != '' &&
       (github.event_name == 'push' ||

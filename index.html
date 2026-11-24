@@ -229,23 +229,32 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
 
 @media (max-width: 900px) {
     .top nav { display: none; }
-    .hero .wrap { grid-template-columns: 1fr; }
+    .hero .wrap { grid-template-columns: minmax(0, 1fr); }
     .coin-stage { order: -1; }
     .coin { width: min(62vw, 280px); }
     .ritual { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .ritual li { padding: 24px 20px 24px 0; border-bottom: 1px solid var(--strand); }
     .ritual li:nth-child(2n) { border-right: 0; padding-right: 0; }
     .ritual li:nth-child(2n+1) { padding-left: 0; }
-    .code, .concede, .pledge { grid-template-columns: 1fr; }
+    .code, .concede, .pledge { grid-template-columns: minmax(0, 1fr); }
     .code .head { position: static; }
     .card { max-width: 400px; }
 }
 @media (max-width: 520px) {
+    /* The hero word must fit a 320px screen (400% zoom), so it scales with the viewport here. */
+    .hero h1 { font-size: clamp(2.6rem, 15vw, 4rem); }
+    .top .wrap { gap: 12px; }
+    .brand { min-width: 0; }
+    .brand span { font-size: 1.15rem; }
+    .btn.small { padding: 0 14px; }
     .ritual { grid-template-columns: 1fr; }
     .ritual li, .ritual li + li { padding: 22px 0; border-right: 0; }
     .tenets li { grid-template-columns: 3rem minmax(0, 1fr); }
     .pledge .row, .linkbox { flex-direction: column; }
     .actions .btn { flex: 1 1 100%; }
+}
+@media (max-width: 400px) {
+    .btn.small .long { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -267,7 +276,7 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
             <a href="#concede">Concede</a>
             <a href="#pledge">Get coins</a>
         </nav>
-        <a class="btn small" href="#concede">Concede a beard</a>
+        <a class="btn small" href="#concede">Concede<span class="long"> a beard</span></a>
     </div>
 </header>
 

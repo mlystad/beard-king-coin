@@ -7,6 +7,8 @@ Beard King Coin site, served at originalbeardking.com from this repository.
 - `favicon.svg`, `og.png`: the mark and the 1200 × 630 link preview image.
 - `analytics.js`: GA4 with a consent notice. Shared with itsthebeard.com; keep the copies identical.
 - `scripts/build.mjs`: builds the Firebase Hosting copy into `dist/` (see below).
+- `docs/DESIGN.md`: design rules and what CI enforces. Start here before changing anything visual or any wording. `CLAUDE.md` is the contributor guide.
+- `design-rules.json`, `design-baseline.json`, `scripts/check-design.mjs`, `scripts/check-a11y.mjs`, `scripts/design-checks.test.mjs`: the design guardrails (shared with the store).
 - `docs/PLAN.md`: the improvement plan. Setup steps are in `docs/SETUP.md` in the itsthebeard repository.
 
 A coin can be conceded online. The form builds a link of the form
@@ -35,6 +37,13 @@ stay correct as they are served today.
 
 ```sh
 node scripts/build.mjs && node scripts/check-dist.mjs
+```
+
+```sh
+npm ci
+npm run check:design                              # static design rules (needs a build)
+CHROMIUM_PATH=/path/to/chrome npm run check:a11y        # browser accessibility rules
+npm run test:design                                     # proves the checks catch violations
 ```
 
 `.github/workflows/firebase.yml` runs that check on every push, and deploys once
