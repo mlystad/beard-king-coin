@@ -5,6 +5,7 @@ Beard King Coin site, served at originalbeardking.com from this repository.
 - `index.html`: the whole page (styles and script inline).
 - `privacy.html`: privacy notice for the pledge form and the online concession.
 - `favicon.svg`, `og.png`: the mark and the 1200 × 630 link preview image.
+- `robots.txt`, `sitemap.xml`, `404.html`: the files crawlers and lost visitors use. `sitemap.xml` lists every indexable page.
 - `analytics.js`: GA4 with a consent notice. Shared with itsthebeard.com; keep the copies identical.
 - `scripts/build.mjs`: builds the Firebase Hosting copy into `dist/` (see below).
 - `docs/DESIGN.md`: design rules and what CI enforces. Start here before changing anything visual or any wording. `CLAUDE.md` is the contributor guide.

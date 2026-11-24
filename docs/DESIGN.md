@@ -15,7 +15,7 @@ palette and voice.
 | `SIGNUP_MODE=api GA_MEASUREMENT_ID=G-TEST12345 node scripts/build.mjs` | Builds `dist/` with the features that need checking switched on. |
 | `npm run check:design` | Static rules on the built site (`design-rules.json`). |
 | `npm run check:a11y` | Browser rules: axe, 320px reflow, focus, tap size, reduced motion. Needs `CHROMIUM_PATH` or Chrome. |
-| `npm run test:design` | Proves each check fails when it should (seeded violations). |
+| `npm run test:design` | Proves each check fails when it should (seeded violations), and covers `robots.txt`, `sitemap.xml`, the 404 page and the pledge form's error state. |
 
 Two kinds of rule:
 
@@ -50,7 +50,8 @@ The palette is a beard shade card, defined as `--raven`, `--soot` and so on in `
 | `--raven` | `#0A0B0D` | Page background |
 | `--soot` | `#121418` | Bands |
 | `--sable` | `#1B1E24` | Raised surfaces |
-| `--strand` | `#2E323A` | Hairlines and dividers (decorative) |
+| `--strand` | `#2E323A` | Hairlines and dividers (decorative only) |
+| `--edge` | `#666C77` | Borders of controls such as text inputs: 3:1 or better |
 | `--ash` | `#9BA0AA` | Quiet text, labels, hints |
 | `--salt` | `#CDD1D7` | Body text |
 | `--bone` | `#F3EEE4` | Headings |
@@ -60,9 +61,9 @@ The palette is a beard shade card, defined as `--raven`, `--soot` and so on in `
 - **Contrast** (checked: `token-contrast`): the text tokens reach 4.5:1 on `--raven` and
   `--soot`; `--ember` also reaches 3:1 as the focus ring. The exact pairs are in
   `design-rules.json`.
-- **Known gap:** `--strand` is only 1.53:1 on `--raven`, so text-input borders are too faint
-  (WCAG 1.4.11 needs 3:1). Held by `token-contrast-known`; fix is A11y #10 below. Do not use
-  `--strand` as the only border of a control.
+- **Borders of controls use `--edge`** (3.7:1 on `--raven`, 3.5:1 on `--soot`; WCAG 1.4.11 needs
+  3:1). `--strand` is only 1.5:1, so it is for decorative hairlines and must never be the only
+  border of a control.
 - **No opacity on text.** Use an opaque token so contrast stays measurable.
 - **Colour never carries meaning alone** (WCAG 1.4.1).
 
@@ -101,8 +102,9 @@ The header button reads "Concede" on very narrow screens; keep its short form me
 
 **Forms.** Every field has a visible `<label for>` (`input-label`). Errors are in words,
 beside the field, announced (`role="status"`), and keep what was typed. The honeypot stays
-hidden from people (`.hp`). `aria-invalid` is **review**: not on the pledge form yet
-(A11y #7).
+hidden from people (`.hp`). An invalid address also marks the field `aria-invalid`, the field
+points at the message with `aria-describedby`, and both clear as soon as the visitor edits
+(`scripts/pledge.test.mjs`).
 
 **Focus.** Visible on every control (`focus-indicator`), never removed without an equal
 replacement (`focus-indicator-removed`).
@@ -116,8 +118,12 @@ privacy notice says so. Do not add a backend call, a counter or a share service 
 changing the notice first.
 
 **Hero over the hair canvas.** Text sits on a drawn background of strands. Any text that sits
-on it must keep 4.5:1 against the brightest strand under it (**review**; the 12px label and
-hint dip to roughly 4:1 to 5:1 over bright strands: A11y #9).
+on it must keep 4.5:1 against the brightest strand under it (**review**). The small text (the
+12px label and the "tap the coin" hint) carries a soft raven halo (`text-shadow`) for this.
+Measured on 24 November 2026 by sampling the rendered pixels behind the text, with the real
+fonts: at the 99th percentile of background brightness the label is 5.5:1 and the hint 4.7:1
+or better at 1280 and 375px, and the single worst pixel is 3.5:1 or better. Measure any new
+text over the canvas the same way.
 
 **Analytics notice.** `analytics.js`, shared. It follows the skip link or comes first in the
 page, reserves its own height and is reopened from "Cookie choice". Do not turn it into an
@@ -173,6 +179,10 @@ To use one, add it to `allowedClaims` in `design-rules.json` with its evidence.
   `dist/`.
 - Wording that depends on the setup (Google Forms or the function, Mailchimp, analytics,
   contact address) lives inside those switches, so it is never wrong for either mode.
+- `robots.txt`, `sitemap.xml` and `404.html` are real files at the root, because the site is
+  served from there. The build copies them. `sitemap.xml` must list exactly the pages that can
+  be indexed (everything except the 404 page); a test fails otherwise, and a new page also
+  needs adding to the page list in `scripts/build.mjs`. The 404 page is `noindex`.
 
 ## 10. Pull request checklist
 
@@ -195,8 +205,7 @@ To use one, add it to `allowedClaims` in `design-rules.json` with its evidence.
 
 | Rule id | Kind | Protects | Todo while it is a ratchet |
 |---|---|---|---|
-| `token-contrast`, `token-missing` | hard | Text and boundary contrast | |
-| `token-contrast-known` | ratchet | Input border contrast | A11y #10 |
+| `token-contrast`, `token-missing` | hard | Text and boundary contrast (including `--edge`) | |
 | `font-size-floor`, `rendered-font-floor`, `letter-spacing-cap` | ratchet | Readable text | A11y #4 |
 | `color-literal`, `inline-style` | ratchet | Colours and styles from tokens and classes | |
 | `focus-indicator-removed`, `focus-indicator`, `focus-obscured`, `keyboard-trap`, `keyboard-unreachable` | hard | Keyboard users | |
@@ -219,8 +228,5 @@ same pull request.
 |---|---|---|---|
 | A11y #4 | Raise small text: nothing under 14px; the 12px form labels, hint and header links; uppercase only for short labels; tracking 0.12em or less. | `font-size-floor`, `rendered-font-floor`, `letter-spacing-cap` | Needs a design check. |
 | A11y #6 | Enlarge tap targets to 44 by 44px: top nav links (20px), "Cookie choice", privacy page links; "Copy link" and share buttons are 42px. | `target-24` | 24px is enforced; 44px is the goal. |
-| A11y #7 | On an invalid email, set `aria-invalid="true"` and `aria-describedby` pointing at the message; the coin form has no `aria-describedby` yet. | review | Inline script in `index.html`. |
-| A11y #9 | Keep the 12px orange label and grey hint above 4.5:1 over bright hair strands (halo or scrim behind them). | review | Measure with pixel sampling at 1280 and 375px. |
-| A11y #10 | Give text inputs a border that reaches 3:1 (a token between `--strand` and `--ash`); then remove `known` from the pair in `design-rules.json`. | `token-contrast-known` | WCAG 1.4.11. |
 
 Items for the store are in its own `docs/DESIGN.md`.

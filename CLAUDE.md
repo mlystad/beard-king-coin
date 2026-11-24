@@ -49,6 +49,10 @@ runs them and blocks deploys on failure.
    repositories. Change both together.
 8. **`scripts/check-design.mjs`, `scripts/check-a11y.mjs` and
    `scripts/design-checks.test.mjs` are also shared.** Same rule.
+9. **A new page needs three things:** a line in `sitemap.xml` (a test checks it lists exactly the
+   indexable pages), a place in the page list in `scripts/build.mjs`, and a link from the
+   footer or nav. Never put the 404 page in the sitemap.
+10. **Borders of controls use `--edge`, never `--strand`** (1.5:1; decorative only).
 
 ## Pull requests
 
