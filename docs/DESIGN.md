@@ -199,7 +199,7 @@ To use one, add it to `allowedClaims` in `design-rules.json` with its evidence.
 | `token-contrast-known` | ratchet | Input border contrast | A11y #10 |
 | `font-size-floor`, `rendered-font-floor`, `letter-spacing-cap` | ratchet | Readable text | A11y #4 |
 | `color-literal`, `inline-style` | ratchet | Colours and styles from tokens and classes | |
-| `focus-indicator-removed`, `focus-indicator`, `focus-obscured`, `keyboard-trap` | hard | Keyboard users | |
+| `focus-indicator-removed`, `focus-indicator`, `focus-obscured`, `keyboard-trap`, `keyboard-unreachable` | hard | Keyboard users | |
 | `reflow`, `zoom-locked`, `viewport-meta` | hard | Zoom and small screens | |
 | `reduced-motion-*` | hard | Motion sensitivity | |
 | `target-24` | ratchet | Tap and click targets | A11y #6 |

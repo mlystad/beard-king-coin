@@ -164,6 +164,34 @@ for (const [name, html, expected] of bcases) {
     else assert.ok(got.includes(expected), `expected ${expected}, got [${got}]`);
   });
 }
+/* a site made of several pages, so page discovery and ordering are exercised */
+async function browseSite(files) {
+  const dir = site(files);
+  try { return await analyzeBrowser(dir, { chromium, axeSource, launch, fonts: 'offline' }); } finally { rmSync(dir, { recursive: true, force: true }); }
+}
+const FOCUS = 'a:focus-visible,button:focus-visible{outline:2px solid #fff} ';
+const link = (id, t) => `<a id="${id}" href="#${id}" style="display:inline-block;padding:12px">${t}</a>`;
+const traps = [
+  ['a control that keeps focus on itself', bpage(FOCUS, `${link('one', 'One')}${link('two', 'Two')}${link('three', 'Three')}<script>document.getElementById('two').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();e.target.focus();}})</script>`), 'keyboard-trap'],
+  ['focus that cycles through only some of the controls', bpage(FOCUS, `${link('one', 'One')}${link('two', 'Two')}${link('three', 'Three')}<script>document.getElementById('two').addEventListener('keydown',e=>{if(e.key==='Tab'&&!e.shiftKey){e.preventDefault();document.getElementById('one').focus();}})</script>`), null],
+];
+for (const [name, html, expected] of traps) {
+  test(`browser: ${name} is reported`, { skip: canBrowse ? false : 'no Chromium (set CHROMIUM_PATH)', timeout: 120000 }, async () => {
+    const got = ids(await browse(html));
+    assert.ok(got.includes('keyboard-trap') || got.includes('keyboard-unreachable'), `expected a keyboard failure, got [${got}]`);
+  });
+}
+test('browser: a normal tab order that ends at the end of the page passes', { skip: canBrowse ? false : 'no Chromium (set CHROMIUM_PATH)', timeout: 120000 }, async () => {
+  const got = ids(await browse(bpage(FOCUS, `${link('one', 'One')}${link('two', 'Two')}${link('three', 'Three')}`)));
+  assert.deepEqual(got.filter((i) => i.startsWith('keyboard')), []);
+});
+test('browser: reduced motion is checked on every page, not just the first one found', { skip: canBrowse ? false : 'no Chromium (set CHROMIUM_PATH)', timeout: 120000 }, async () => {
+  const quiet = bpage(FOCUS, '<p>nothing moves here</p>');
+  const moving = bpage(FOCUS + '@keyframes s{to{transform:translateX(5px)}} .m{animation:s 1s infinite alternate}', '<p class="m">moving</p>');
+  // 404.html sorts before index.html: a check that only looks at the first page never sees the animation
+  const got = ids(await browseSite({ '404.html': quiet, 'index.html': moving }));
+  assert.ok(got.includes('reduced-motion-animation'), `expected reduced-motion-animation, got [${got}]`);
+});
 test('browser ratchet counts unique offenders, not repeats', () => {
   const f = ['/a', '/b', '/c'].map((w) => ({ id: 'target-24', level: 'ratchet', where: w, detail: 'x', key: 'footer link' }));
   assert.deepEqual(evaluateBrowser(f, { browser: { 'target-24': 1 } }).counts, { 'target-24': 1 });

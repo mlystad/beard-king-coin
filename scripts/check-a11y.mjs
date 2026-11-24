@@ -11,7 +11,7 @@
  * (GitHub's ubuntu runners have it), otherwise Playwright's own download.
  * Set FONTS=offline to skip loading Google Fonts (measures with fallback fonts).
  *
- * hard     reflow, focus-indicator, focus-obscured, keyboard-trap, reduced-motion-animation
+ * hard     reflow, focus-indicator, focus-obscured, keyboard-trap, keyboard-unreachable, reduced-motion-animation
  * ratchet  axe-<rule>, target-24, rendered-font-floor  (legacy counts live in
  *          design-baseline.json under "browser"; they may fall, never rise)
  */
@@ -61,6 +61,12 @@ const inPage = {
       .map((e) => ({ el: label(e), key: sel(e), px: Math.round(parseFloat(getComputedStyle(e).fontSize) * 10) / 10 }))
       .filter((t) => t.px < minFont);
     return { scrollW: document.documentElement.scrollWidth, small, tiny };
+  },
+  // how many controls Tab should be able to reach on this page
+  focusable: () => {
+    const visible = (e) => { const r = e.getBoundingClientRect(), cs = getComputedStyle(e); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none'; };
+    return [...document.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]')]
+      .filter((e) => !e.disabled && e.tabIndex >= 0 && e.type !== 'hidden' && visible(e) && !e.closest('[inert], [hidden]')).length;
   },
   focus: () => {
     const e = document.activeElement;
@@ -115,25 +121,33 @@ export async function analyze(dir, { chromium, axeSource, launch, fonts = 'onlin
       for (const t of m.tiny) add('rendered-font-floor', 'ratchet', where, `${t.el} renders at ${t.px}px, minimum ${MIN_FONT}px`, t.key);
 
       if (width === WIDTHS[0]) {
-        // keyboard: every stop shows an indicator and is not hidden behind a fixed element; the tab order reaches the end
-        const seen = new Set(); let wrapped = false;
-        for (let i = 0; i < 160; i++) {
+        // keyboard: every stop shows an indicator and is not hidden behind a fixed element.
+        // The order must end properly: focus leaves the document, or comes back round to the first stop,
+        // and by then every focusable control must have been visited. A control that holds focus,
+        // a repeated stop, or a loop through only some controls is a trap (WCAG 2.1.2).
+        const expected = await page.evaluate(inPage.focusable);
+        const seen = new Set(); let prev = null, first = null, ended = false, trapped = false;
+        for (let i = 0; i < expected + 40; i++) {
           await page.keyboard.press('Tab');
           // smooth scrolling can start late: wait until the page has been still for four samples in a row
           let lastY = -1, still = 0; for (let k = 0; k < 80 && still < 4; k++) { await page.waitForTimeout(50); const y = await page.evaluate(() => scrollY); still = y === lastY ? still + 1 : 0; lastY = y; }
           const f = await page.evaluate(inPage.focus);
-          if (!f) { wrapped = true; break; }                       // focus left the page: end of the order
-          if (seen.has(f.key)) { wrapped = true; break; }
-          seen.add(f.key);
+          if (!f) { ended = true; break; }                          // focus left the page: end of the order
+          if (f.key === prev) { trapped = true; add('keyboard-trap', 'hard', where, `focus stayed on ${f.el} after Tab (WCAG 2.1.2)`); break; }
+          if (first && f.key === first && seen.size >= 2) { ended = true; break; }   // wrapped round to the first stop
+          if (seen.has(f.key)) { trapped = true; add('keyboard-trap', 'hard', where, `focus came back to ${f.el} before the end of the page (WCAG 2.1.2)`); break; }
+          if (!first) first = f.key;
+          prev = f.key; seen.add(f.key);
           if (!f.indicator) add('focus-indicator', 'hard', where, `${f.el} shows no focus indicator (WCAG 2.4.7)`);
           if (f.covered > 0.5) add('focus-obscured', 'hard', where, `${f.el} is ${Math.round(f.covered * 100)}% hidden behind a fixed element when focused (WCAG 2.4.11)`);
         }
-        if (!wrapped) add('keyboard-trap', 'hard', where, 'tabbing 160 times never reached the end of the page (WCAG 2.1.2)');
+        if (!ended && !trapped) add('keyboard-trap', 'hard', where, `tabbing ${expected + 40} times never reached the end of the page (WCAG 2.1.2)`);
+        if (ended && seen.size < expected) add('keyboard-unreachable', 'hard', where, `Tab reached only ${seen.size} of ${expected} focusable controls (WCAG 2.1.1)`);
       }
       await ctx.close();
     }
     // reduced motion: nothing keeps running once the page has settled
-    for (const path of list.slice(0, 1)) {
+    for (const path of list) {                // every page: animations live on particular pages, not on the first one found
       const ctx = await browser.newContext({ viewport: { width: 1280, height: 700 }, reducedMotion: 'reduce' });
       const page = await ctx.newPage();
       await page.route(/googletagmanager\.com/, (r) => r.fulfill({ status: 200, body: '' }));
