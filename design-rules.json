@@ -1,0 +1,47 @@
+{
+  "_readme": "Machine-readable design rules for scripts/check-design.mjs. Each entry is explained in docs/DESIGN.md. Loosening anything here is a design decision: say why in the pull request.",
+
+  "minFontPx": 14,
+  "maxLetterSpacingEm": 0.12,
+
+  "contrast": [
+    { "fg": "--bone",   "bg": "--raven", "min": 4.5, "use": "headings and body text" },
+    { "fg": "--bone",   "bg": "--soot",  "min": 4.5, "use": "headings on bands" },
+    { "fg": "--salt",   "bg": "--raven", "min": 4.5, "use": "body text" },
+    { "fg": "--salt",   "bg": "--soot",  "min": 4.5, "use": "body text on bands" },
+    { "fg": "--ash",    "bg": "--raven", "min": 4.5, "use": "quiet text, labels, hints" },
+    { "fg": "--ash",    "bg": "--soot",  "min": 4.5, "use": "quiet text on bands" },
+    { "fg": "--ash",    "bg": "--sable", "min": 4.5, "use": "quiet text on raised surfaces" },
+    { "fg": "--ginger", "bg": "--raven", "min": 4.5, "use": "accent text and links" },
+    { "fg": "--ginger", "bg": "--soot",  "min": 4.5, "use": "accent text on bands" },
+    { "fg": "--ember",  "bg": "--raven", "min": 4.5, "use": "light accent text, status messages, focus ring" },
+    { "fg": "--ember",  "bg": "--soot",  "min": 4.5, "use": "light accent text on bands" },
+    { "fg": "--raven",  "bg": "--ginger","min": 4.5, "use": "text on primary buttons" },
+    { "fg": "--raven",  "bg": "--ember", "min": 4.5, "use": "text on hovered buttons" },
+    { "fg": "--ember",  "bg": "--raven", "min": 3,   "use": "focus ring (WCAG 1.4.11)" },
+    { "fg": "--strand", "bg": "--raven", "min": 3,   "use": "text input borders (WCAG 1.4.11)", "known": "todo A11y #10: give inputs a border token that reaches 3:1" }
+  ],
+
+  "allowedHosts": [
+    "originalbeardking.com", "itsthebeard.com",
+    "fonts.googleapis.com", "fonts.gstatic.com",
+    "www.googletagmanager.com",
+    "docs.google.com", "policies.google.com",
+    "wa.me", "twitter.com",
+    "www.w3.org"
+  ],
+
+  "claimsHelp": "this claim is not true yet or is regulated; see docs/DESIGN.md, Voice and claims. To use it, add it to allowedClaims with the evidence.",
+
+  "bannedClaims": [
+    "ships within", "ship within", "ships in", "fast shipping", "free shipping", "free delivery", "free returns",
+    "hassle-free", "easy returns", "money-back", "satisfaction guarantee", "quality guaranteed", "guaranteed",
+    "in stock", "always in stock", "limited stock", "while supplies last", "sold out", "selling fast",
+    "prime-eligible", "prime eligible", "prime shipping", "prime delivery",
+    "best seller", "best-seller", "bestselling", "best-selling", "#1",
+    "limited edition", "limited run", "numbered", "hand-numbered", "serialized",
+    "solid brass", "brass", "bronze", "zinc", "gold-plated", "silver-plated", "enamel", "antique finish", "handmade", "hand-made", "made in usa", "made in the usa"
+  ],
+
+  "allowedClaims": []
+}
