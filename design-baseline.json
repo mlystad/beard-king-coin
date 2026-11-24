@@ -4,8 +4,7 @@
     "color-literal": 2,
     "font-size-floor": 7,
     "inline-style": 2,
-    "letter-spacing-cap": 5,
-    "token-contrast-known": 1
+    "letter-spacing-cap": 5
   },
   "browser": {
     "rendered-font-floor": 15,

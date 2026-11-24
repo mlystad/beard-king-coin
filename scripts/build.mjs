@@ -10,17 +10,18 @@
  *   EMAIL_PROVIDER     mailchimp | none       wording about the confirmation email
  *   GA_MEASUREMENT_ID  G-XXXXXXX              adds GA4 with the consent notice
  *   CONTACT_EMAIL      hello@...              shown in the privacy notice
+ *   OUT_DIR            output directory       default ./dist (tests use a temporary one)
  *
  * Conditional text in the HTML:
  *   <!--unless:flag-->shown unless flag<!--/unless:flag-->
  *   <!--when:flag shown only when flag -->
  */
-import { readFileSync, writeFileSync, mkdirSync, rmSync, copyFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, copyFileSync, existsSync, readdirSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const out = join(root, 'dist');
+const out = process.env.OUT_DIR ? resolve(process.env.OUT_DIR) : join(root, 'dist');
 const env = (k, d = '') => (process.env[k] || d).trim();
 const fail = (m) => { console.error(`build: ${m}`); process.exit(1); };
 
@@ -56,16 +57,16 @@ function render(html, file) {
   return html;
 }
 
+// The output directory is wiped first, so only an empty folder or a previous build (it has an
+// index.html) is accepted. A mistyped OUT_DIR must never delete something else.
+if (existsSync(out) && readdirSync(out).length && !existsSync(join(out, 'index.html'))) {
+  fail(`${out} is not empty and does not look like a built site (no index.html); refusing to wipe it`);
+}
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
-for (const f of ['index.html', 'privacy.html']) writeFileSync(join(out, f), render(readFileSync(join(root, f), 'utf8'), f));
-for (const f of ['favicon.svg', 'og.png']) copyFileSync(join(root, f), join(out, f));
+for (const f of ['index.html', 'privacy.html', '404.html']) writeFileSync(join(out, f), render(readFileSync(join(root, f), 'utf8'), f));
+// robots.txt and sitemap.xml are real files at the repository root (the site is served from there), so
+// the build copies them rather than writing its own and letting the two drift apart.
+for (const f of ['favicon.svg', 'og.png', 'robots.txt', 'sitemap.xml']) copyFileSync(join(root, f), join(out, f));
 if (gaId) copyFileSync(join(root, 'analytics.js'), join(out, 'analytics.js'));
-writeFileSync(join(out, 'robots.txt'), 'User-agent: *\nAllow: /\n\nSitemap: https://originalbeardking.com/sitemap.xml\n');
-writeFileSync(join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://originalbeardking.com/</loc></url>
-  <url><loc>https://originalbeardking.com/privacy</loc></url>
-</urlset>
-`);
 console.log(`build: dist/ ready (signup=${mode}${mode === 'api' ? '/' + provider : ''}, analytics=${gaId ? 'on' : 'off'}, contact=${contact ? 'on' : 'off'})`);

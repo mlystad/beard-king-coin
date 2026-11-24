@@ -35,6 +35,7 @@
     --soot: #121418;    /* band */
     --sable: #1B1E24;   /* raised surface */
     --strand: #2E323A;  /* hairlines */
+    --edge: #666C77;    /* borders of controls: 3:1 or better against the page (WCAG 1.4.11) */
     --ash: #9BA0AA;     /* quiet text */
     --salt: #CDD1D7;    /* body text */
     --bone: #F3EEE4;    /* headings */
@@ -155,6 +156,9 @@ a { color: inherit; }
 .coin svg { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .coin .back { transform: rotateY(180deg); }
 .coin-hint { font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+/* Small text sits on a drawn background of strands. A soft raven halo keeps it readable where a
+   bright strand runs underneath, without a box around it. Measured in docs/DESIGN.md. */
+.hero .label, .coin-hint { text-shadow: 0 0 3px var(--raven), 0 0 8px var(--raven), 0 0 14px var(--raven); }
 
 /* Sections */
 section { padding-block: clamp(64px, 9vw, 120px); }
@@ -192,7 +196,7 @@ section { padding-block: clamp(64px, 9vw, 120px); }
 input[type="text"], input[type="email"] {
     width: 100%; min-height: 54px; padding: 0 18px;
     font: inherit; font-size: 1.1rem; color: var(--bone);
-    background: var(--raven); border: 1px solid var(--strand); border-radius: 10px;
+    background: var(--raven); border: 1px solid var(--edge); border-radius: 10px;
     transition: border-color .2s;
 }
 input::placeholder { color: #7D828C; }
@@ -456,7 +460,7 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
             <div class="field">
                 <label for="email">Your email</label>
                 <div class="row">
-                    <input type="email" name="emailAddress" id="email" placeholder="you@example.com" autocomplete="email" required>
+                    <input type="email" name="emailAddress" id="email" placeholder="you@example.com" autocomplete="email" aria-describedby="cta-message" required>
                     <button class="btn" type="submit">Pledge</button>
                 </div>
             </div>
@@ -715,7 +719,22 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
        shared signup function and gets a real answer; "google-form" posts to a
        Google Form, which returns nothing readable, so we only report that it left. */
     var emailForm = $('email-form'), msg = $('cta-message'), trap = $('website'), loadedAt = Date.now(), busy = false;
+    /* An invalid address marks the field itself (aria-invalid) as well as printing the message, and the field
+       points at that message (aria-describedby), so a screen reader hears what is wrong when it lands there. */
+    var emailInput = $('email'), invalidShown = false;
+    function flagInvalid() {
+        msg.textContent = 'Enter a valid email address, like you@example.com.';
+        emailInput.setAttribute('aria-invalid', 'true');
+        invalidShown = true;
+        emailInput.focus();
+    }
+    function clearInvalid() {
+        emailInput.removeAttribute('aria-invalid');
+        if (invalidShown) { msg.textContent = ''; invalidShown = false; }   // the message is stale once the visitor edits
+    }
+    emailInput.addEventListener('input', clearInvalid);
     function pledged(text) {
+        clearInvalid();
         emailForm.reset(); msg.textContent = text;
         window.itbTrack('sign_up', { method: 'email', site: 'coin' });
     }
@@ -732,7 +751,7 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
             return res.json().catch(function () { return {}; }).then(function (data) {
                 if (res.ok && data.status === 'pending') { return pledged('Almost there. Check your inbox and confirm your address.'); }
                 if (res.ok) { return pledged('Pledge recorded. We write when the first coins are struck.'); }
-                if (res.status === 400) { msg.textContent = 'Enter a valid email address, like you@example.com.'; $('email').focus(); return; }
+                if (res.status === 400) { flagInvalid(); return; }
                 if (res.status === 429) { msg.textContent = 'A lot of people are pledging right now. Please try again in a few minutes.'; return; }
                 msg.textContent = 'Something went wrong on our side. Please try again in a minute.';
             });
@@ -746,8 +765,9 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
     emailForm.addEventListener('submit', function (e) {
         e.preventDefault();
         if (busy) { return; }
-        var input = $('email');
-        if (!input.value || !input.checkValidity()) { msg.textContent = 'Enter a valid email address, like you@example.com.'; input.focus(); return; }
+        var input = emailInput;
+        if (!input.value || !input.checkValidity()) { flagInvalid(); return; }
+        clearInvalid();
         busy = true;
         msg.textContent = 'Sending your pledge.';
         (emailForm.getAttribute('data-signup') === 'api' ? viaApi : viaGoogleForm)(input.value.trim())

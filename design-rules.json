@@ -19,7 +19,8 @@
     { "fg": "--raven",  "bg": "--ginger","min": 4.5, "use": "text on primary buttons" },
     { "fg": "--raven",  "bg": "--ember", "min": 4.5, "use": "text on hovered buttons" },
     { "fg": "--ember",  "bg": "--raven", "min": 3,   "use": "focus ring (WCAG 1.4.11)" },
-    { "fg": "--strand", "bg": "--raven", "min": 3,   "use": "text input borders (WCAG 1.4.11)", "known": "todo A11y #10: give inputs a border token that reaches 3:1" }
+    { "fg": "--edge",   "bg": "--raven", "min": 3,   "use": "text input borders (WCAG 1.4.11)" },
+    { "fg": "--edge",   "bg": "--soot",  "min": 3,   "use": "text input borders on bands (WCAG 1.4.11)" }
   ],
 
   "allowedHosts": [

@@ -2,13 +2,15 @@
   "name": "beard-king-coin",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20.1" },
+  "engines": {
+    "node": ">=20.1"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/check-dist.mjs",
     "check:design": "node scripts/check-design.mjs",
     "check:a11y": "node scripts/check-a11y.mjs",
-    "test:design": "node --test scripts/design-checks.test.mjs",
+    "test:design": "node --test scripts/design-checks.test.mjs scripts/site-files.test.mjs scripts/pledge.test.mjs",
     "design:baseline": "node scripts/check-design.mjs --update-baseline && node scripts/check-a11y.mjs --update-baseline"
   },
   "devDependencies": {

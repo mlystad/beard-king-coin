@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://originalbeardking.com/sitemap.xml
