@@ -1,0 +1,83 @@
+name: Build, check and deploy
+
+# Checks run on every push and pull request.
+# Deploys run only once the repository variable FIREBASE_PROJECT_ID is set
+# (see docs/SETUP.md in mlystad/itsthebeard): pull requests get a preview
+# channel, main goes live.
+#
+# The signup function is deployed from the itsthebeard repository. This site
+# only rewrites /api/signup to it, so deploy that repository first.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FIREBASE_TOOLS: firebase-tools@15.35.0
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build with default settings
+        run: node scripts/build.mjs && node scripts/check-dist.mjs
+      - name: Build with every option on
+        run: node scripts/build.mjs && node scripts/check-dist.mjs
+        env:
+          SIGNUP_MODE: api
+          EMAIL_PROVIDER: mailchimp
+          GA_MEASUREMENT_ID: G-TEST12345
+          CONTACT_EMAIL: hello@example.com
+
+  deploy:
+    needs: check
+    if: >-
+      vars.FIREBASE_PROJECT_ID != '' &&
+      (github.event_name == 'push' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # Workload Identity Federation: no service-account key in the repo
+    environment: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+    env:
+      SIGNUP_MODE: api
+      EMAIL_PROVIDER: ${{ vars.MAILCHIMP_AUDIENCE_ID != '' && 'mailchimp' || 'none' }}
+      GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
+      CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+      - name: Build
+        run: node scripts/build.mjs && node scripts/check-dist.mjs
+      - name: Point the Firebase CLI at the project and Hosting site
+        run: |
+          npx -y $FIREBASE_TOOLS use "${{ vars.FIREBASE_PROJECT_ID }}" --add --alias default
+          npx -y $FIREBASE_TOOLS target:apply hosting coin "${{ vars.COIN_HOSTING_SITE }}"
+      - name: Deploy preview channel
+        if: github.event_name == 'pull_request'
+        run: |
+          npx -y $FIREBASE_TOOLS hosting:channel:deploy "pr-${{ github.event.number }}" --only coin --expires 7d --json > channel.json
+          url=$(node -e "const r=require('./channel.json').result;console.log(Object.values(r)[0].url)")
+          echo "Preview: $url" >> "$GITHUB_STEP_SUMMARY"
+      - name: Deploy live
+        if: github.event_name == 'push'
+        run: npx -y $FIREBASE_TOOLS deploy --only hosting:coin --non-interactive
