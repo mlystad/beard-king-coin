@@ -64,6 +64,9 @@ body {
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
 [hidden] { display: none !important; }
+:root { --consent-bg: var(--soot); --consent-fg: var(--bone); --consent-accent: var(--ginger); --consent-on-accent: var(--raven); }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.link-btn { background: none; border: 0; padding: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
 
 .wrap { max-width: var(--measure); margin: 0 auto; padding-inline: var(--gutter); }
 
@@ -289,8 +292,8 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
             <h1 class="display" id="hero-title">Superior beard, <span class="voice">sir.</span></h1>
             <p class="lede" id="hero-lede">You carry the coin. You meet a beard better than your own. You hand it over. <b>No speech, no selfie, just a nod.</b> Then he carries coins too.</p>
             <div class="actions">
-                <a class="btn" href="#concede" id="hero-cta">Concede a beard now</a>
-                <a class="btn ghost" href="#pledge">Get the real coins</a>
+                <a class="btn" href="#concede" id="hero-cta" data-track="select_content" data-item="hero-concede">Concede a beard now</a>
+                <a class="btn ghost" href="#pledge" data-track="select_content" data-item="hero-pledge">Get the real coins</a>
             </div>
         </div>
 
@@ -401,13 +404,13 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
                 </div>
                 <div class="share-row">
                     <button class="btn" type="submit" id="c-share">Send the coin</button>
-                    <a class="btn ghost" id="c-wa" target="_blank" rel="noopener" href="#">WhatsApp</a>
-                    <a class="btn ghost" id="c-x" target="_blank" rel="noopener" href="#">Post on X</a>
-                    <button class="btn ghost" type="button" id="c-save">Save card</button>
+                    <a class="btn ghost" id="c-wa" target="_blank" rel="noopener" href="#" data-track="share" data-item="concede-whatsapp">WhatsApp</a>
+                    <a class="btn ghost" id="c-x" target="_blank" rel="noopener" href="#" data-track="share" data-item="concede-x">Post on X</a>
+                    <button class="btn ghost" type="button" id="c-save" data-track="share" data-item="concede-save-card">Save card</button>
                 </div>
                 <div class="linkbox">
                     <input type="text" id="c-link" readonly aria-label="Link to send">
-                    <button class="btn ghost small" type="button" id="c-copy">Copy link</button>
+                    <button class="btn ghost small" type="button" id="c-copy" data-track="share" data-item="concede-copy-link">Copy link</button>
                 </div>
                 <p class="status" id="c-status" role="status" aria-live="polite"></p>
                 <p class="tally"><span><b id="t-count">0</b>conceded from this device</span><span>Rank: <em id="t-rank">Unblooded</em></span></p>
@@ -426,8 +429,8 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
         <div class="tag-row">
             <p>Handed one over in the wild? Post the moment and tag it. The handover is the whole point, so show it.</p>
             <div class="share-row" style="margin:0">
-                <button class="btn ghost small" type="button" id="s-copy">Copy the tag</button>
-                <button class="btn ghost small" type="button" id="s-share">Share this page</button>
+                <button class="btn ghost small" type="button" id="s-copy" data-track="share" data-item="copy-tag">Copy the tag</button>
+                <button class="btn ghost small" type="button" id="s-share" data-track="share" data-item="share-page">Share this page</button>
             </div>
         </div>
     </div>
@@ -440,7 +443,7 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
             <h2 class="display">Be there for the first strike.</h2>
             <p>Real metal, sold in packs, because nobody needs just one. Leave your email and we write once, when they are struck.</p>
         </div>
-        <form id="email-form" action="https://docs.google.com/forms/d/e/1FAIpQLScBkplrgRv8TlfR0x29Kaleyzc_PwohhfnBlwVUoPI1aW13ww/formResponse" method="POST" novalidate>
+        <form id="email-form" action="https://docs.google.com/forms/d/e/1FAIpQLScBkplrgRv8TlfR0x29Kaleyzc_PwohhfnBlwVUoPI1aW13ww/formResponse" method="POST" novalidate data-signup="google-form" data-site="coin">
             <div class="field">
                 <label for="email">Your email</label>
                 <div class="row">
@@ -448,8 +451,12 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
                     <button class="btn" type="submit">Pledge</button>
                 </div>
             </div>
+            <div class="hp" aria-hidden="true">
+                <label for="website">Leave this empty</label>
+                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+            </div>
             <p class="status" id="cta-message" role="status" aria-live="polite"></p>
-            <small>Used for coin news only. Signups are collected with Google Forms.</small>
+            <small><!--unless:api-->Used for coin news only. Signups are collected with Google Forms; see the <a href="privacy.html">privacy notice</a>.<!--/unless:api--><!--when:api Used for coin news only. See the <a href="privacy.html">privacy notice</a>. --></small>
         </form>
     </div>
 </section>
@@ -460,6 +467,7 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
     <div class="wrap">
         <p>Every great beard has a story</p>
         <p>Every story deserves a coin</p>
+        <p><a href="privacy.html">Privacy</a><span data-consent-open-sep hidden> · </span><button type="button" class="link-btn" data-consent-open hidden>Cookie choice</button></p>
     </div>
 </footer>
 
@@ -685,17 +693,57 @@ footer p { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
         }
     });
 
+    /* ---------- Analytics hook ---------- */
+    /* analytics.js (added by the build only when GA is configured) replaces this no-op. */
+    window.itbTrack = window.itbTrack || function () {};
+    document.addEventListener('click', function (e) {
+        var el = e.target.closest && e.target.closest('[data-track]');
+        if (el) { window.itbTrack(el.getAttribute('data-track'), { item_id: el.getAttribute('data-item') || undefined }); }
+    });
+
     /* ---------- Pledge ---------- */
-    var emailForm = $('email-form'), msg = $('cta-message');
+    /* Back end chosen at build time by data-signup: "api" posts JSON to the
+       shared signup function and gets a real answer; "google-form" posts to a
+       Google Form, which returns nothing readable, so we only report that it left. */
+    var emailForm = $('email-form'), msg = $('cta-message'), trap = $('website'), loadedAt = Date.now(), busy = false;
+    function pledged(text) {
+        emailForm.reset(); msg.textContent = text;
+        window.itbTrack('sign_up', { method: 'email', site: 'coin' });
+    }
+    function source() {
+        var q = new URLSearchParams(location.search), ref = '';
+        try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) {}
+        return { page: location.pathname, utm_source: q.get('utm_source') || '', utm_medium: q.get('utm_medium') || '', utm_campaign: q.get('utm_campaign') || '', referrer: ref === location.hostname ? '' : ref };
+    }
+    function viaApi(email) {
+        return fetch(emailForm.getAttribute('action'), {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, site: 'coin', source: source(), website: trap ? trap.value : '', elapsedMs: Date.now() - loadedAt })
+        }).then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (data) {
+                if (res.ok && data.status === 'pending') { return pledged('Almost there. Check your inbox and confirm your address.'); }
+                if (res.ok) { return pledged('Pledge recorded. We write when the first coins are struck.'); }
+                if (res.status === 400) { msg.textContent = 'Enter a valid email address, like you@example.com.'; $('email').focus(); return; }
+                if (res.status === 429) { msg.textContent = 'A lot of people are pledging right now. Please try again in a few minutes.'; return; }
+                msg.textContent = 'Something went wrong on our side. Please try again in a minute.';
+            });
+        });
+    }
+    function viaGoogleForm(email) {
+        var body = new URLSearchParams(); body.set('emailAddress', email);
+        return fetch(emailForm.getAttribute('action'), { method: 'POST', mode: 'no-cors', body: body })
+            .then(function () { pledged('Pledge sent. We write when the first coins are struck.'); });
+    }
     emailForm.addEventListener('submit', function (e) {
         e.preventDefault();
+        if (busy) { return; }
         var input = $('email');
         if (!input.value || !input.checkValidity()) { msg.textContent = 'Enter a valid email address, like you@example.com.'; input.focus(); return; }
+        busy = true;
         msg.textContent = 'Sending your pledge.';
-        /* Google Forms gives a cross-origin page no readable reply, so we can only confirm the request left. */
-        fetch(emailForm.action, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(new FormData(emailForm)) })
-            .then(function () { emailForm.reset(); msg.textContent = 'Pledge sent. We write when the first coins are struck.'; })
-            .catch(function () { msg.textContent = 'The pledge did not go through. Check your connection and try again.'; });
+        (emailForm.getAttribute('data-signup') === 'api' ? viaApi : viaGoogleForm)(input.value.trim())
+            .catch(function () { msg.textContent = 'The pledge did not go through. Check your connection and try again.'; })
+            .then(function () { busy = false; });
     });
 })();
 </script>

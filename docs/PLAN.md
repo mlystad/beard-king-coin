@@ -1,5 +1,11 @@
 # originalbeardking.com (Beard King Coin) — Improvement Plan
 
+> **Status, 24 November 2026.** Phase 0 is done. The code for Phase 1 (Firebase Hosting, the signup function, deploys from GitHub, analytics) and the site side of Phase 2 (product data, product pages, policy pages, Amazon buy links) is built and tested. It switches on as the accounts are set up: see `docs/SETUP.md` in the itsthebeard repository. Changes from this plan, and why:
+> - A dependency-free build script instead of Astro, because current Astro needs a newer Node than the interim Netlify host may run, and the site is ten pages.
+> - The signup is protected by a per-address limit (one confirmation email a day) and a site-wide cap instead of App Check and per-IP limits. Inbox flooding is the real abuse risk, client IPs behind Hosting cannot be trusted, and this way no IP address is stored.
+> - gtag.js directly instead of Tag Manager, one less account to manage. Tag Manager can be added later without code changes to the events.
+> - Mailchimp as the email provider. It is swappable: one small client file.
+
 Companion plan: `docs/PLAN.md` in `mlystad/itsthebeard`. The shared Google platform both sites run on is specified there in section 3 and summarised here in section 3.
 
 Constraints this plan is built on:
