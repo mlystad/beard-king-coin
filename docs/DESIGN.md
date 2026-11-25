@@ -97,7 +97,7 @@ The palette is a beard shade card, defined as `--raven`, `--soot` and so on in `
 
 **Buttons (`.btn`).** Pill shaped, ginger fill, `--raven` text; `.ghost` is the quiet
 variant; `.small` is for the header. One main action per view. Labels say what happens.
-Tap targets 44 by 44px; 24px is the enforced floor (`target-24`, ratchet).
+Tap targets are 44 by 44px and that is enforced (`target-44`, ratchet at zero). A link inside a sentence is exempt (WCAG 2.5.8).
 The header button reads "Concede" on very narrow screens; keep its short form meaningful.
 
 **Forms.** Every field has a visible `<label for>` (`input-label`). Errors are in words,
@@ -206,12 +206,12 @@ To use one, add it to `allowedClaims` in `design-rules.json` with its evidence.
 | Rule id | Kind | Protects | Todo while it is a ratchet |
 |---|---|---|---|
 | `token-contrast`, `token-missing` | hard | Text and boundary contrast (including `--edge`) | |
-| `font-size-floor`, `rendered-font-floor`, `letter-spacing-cap` | ratchet | Readable text | A11y #4 |
+| `font-size-floor`, `rendered-font-floor`, `letter-spacing-cap` | ratchet | Readable text | |
 | `color-literal`, `inline-style` | ratchet | Colours and styles from tokens and classes | |
 | `focus-indicator-removed`, `focus-indicator`, `focus-obscured`, `keyboard-trap`, `keyboard-unreachable` | hard | Keyboard users | |
 | `reflow`, `zoom-locked`, `viewport-meta` | hard | Zoom and small screens | |
 | `reduced-motion-*` | hard | Motion sensitivity | |
-| `target-24` | ratchet | Tap and click targets | A11y #6 |
+| `target-44` | ratchet | Tap and click targets | |
 | `axe-*` | ratchet at 0 | WCAG 2.2 A/AA and best practice | |
 | `html-lang`, `h1-count`, `heading-skip`, `img-alt`, `input-label`, `empty-control`, `duplicate-id`, `tabindex-positive` | hard | Structure and names | |
 | `blank-no-noopener`, `affiliate-no-sponsored`, `inline-handler` | hard | Link safety | |
@@ -224,9 +224,6 @@ Known gaps from the accessibility audit of 24 November 2026 (numbers follow the 
 report). Fixing one means lowering its baseline number (`npm run design:baseline`) in the
 same pull request.
 
-| # | What to do | Rules that hold it | Notes |
-|---|---|---|---|
-| A11y #4 | Raise small text: nothing under 14px; the 12px form labels, hint and header links; uppercase only for short labels; tracking 0.12em or less. | `font-size-floor`, `rendered-font-floor`, `letter-spacing-cap` | Needs a design check. |
-| A11y #6 | Enlarge tap targets to 44 by 44px: top nav links (20px), "Cookie choice", privacy page links; "Copy link" and share buttons are 42px. | `target-24` | 24px is enforced; 44px is the goal. |
+None open. New gaps go here with the rule that holds them.
 
 Items for the store are in its own `docs/DESIGN.md`.
