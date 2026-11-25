@@ -2,12 +2,7 @@
   "_readme": "Known legacy design problems, held so they cannot grow. Lower a number when you fix some; never raise one. See docs/DESIGN.md.",
   "static": {
     "color-literal": 2,
-    "font-size-floor": 7,
-    "inline-style": 2,
-    "letter-spacing-cap": 5
+    "inline-style": 2
   },
-  "browser": {
-    "rendered-font-floor": 15,
-    "target-24": 8
-  }
+  "browser": {}
 }

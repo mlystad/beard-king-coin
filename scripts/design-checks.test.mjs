@@ -151,7 +151,7 @@ const bcases = [
   ['a clean page', bpage('a:focus-visible,button:focus-visible{outline:2px solid #fff}', '<p><a href="#x" style="display:inline-block;padding:12px">Go</a></p><button style="padding:12px 20px">Do</button>'), null],
   ['content wider than a 320px screen', bpage('', '<p style="width:600px">wide</p>'), 'reflow'],
   ['a control with no focus indicator', bpage('a{outline:none} button{display:block}', '<p><a href="#x" style="display:inline-block;padding:12px">Go</a></p>'), 'focus-indicator'],
-  ['a tiny tap target', bpage('a:focus-visible{outline:2px solid #fff}', '<p><a href="#x" style="display:inline-block;width:10px;height:10px;background:#fff"></a></p>'), 'target-24'],
+  ['a tiny tap target', bpage('a:focus-visible{outline:2px solid #fff}', '<p><a href="#x" style="display:inline-block;width:10px;height:10px;background:#fff"></a></p>'), 'target-44'],
   ['text under 14px', bpage('', '<p style="font-size:11px">small print</p>'), 'rendered-font-floor'],
   ['a focused control hidden behind a fixed bar', bpage('a:focus-visible{outline:2px solid #fff} .bar{position:fixed;left:0;right:0;top:0;bottom:0;background:#222;z-index:9}', '<p><a href="#x" style="display:inline-block;padding:12px">Go</a></p><div class="bar"></div>'), 'focus-obscured'],
   ['an animation that ignores reduced motion', bpage('a:focus-visible{outline:2px solid #fff} @keyframes s{to{transform:translateX(5px)}} .m{animation:s 1s infinite alternate}', '<p class="m">moving</p>'), 'reduced-motion-animation'],
@@ -193,7 +193,7 @@ test('browser: reduced motion is checked on every page, not just the first one f
   assert.ok(got.includes('reduced-motion-animation'), `expected reduced-motion-animation, got [${got}]`);
 });
 test('browser ratchet counts unique offenders, not repeats', () => {
-  const f = ['/a', '/b', '/c'].map((w) => ({ id: 'target-24', level: 'ratchet', where: w, detail: 'x', key: 'footer link' }));
-  assert.deepEqual(evaluateBrowser(f, { browser: { 'target-24': 1 } }).counts, { 'target-24': 1 });
-  assert.equal(evaluateBrowser(f, { browser: { 'target-24': 1 } }).ok, true);
+  const f = ['/a', '/b', '/c'].map((w) => ({ id: 'target-44', level: 'ratchet', where: w, detail: 'x', key: 'footer link' }));
+  assert.deepEqual(evaluateBrowser(f, { browser: { 'target-44': 1 } }).counts, { 'target-44': 1 });
+  assert.equal(evaluateBrowser(f, { browser: { 'target-44': 1 } }).ok, true);
 });

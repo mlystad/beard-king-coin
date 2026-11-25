@@ -44,7 +44,7 @@
     'background:var(--consent-bg,#15120d);color:var(--consent-fg,#e9e3d6);border:1px solid var(--consent-accent,#c8882a);' +
     'border-radius:4px;padding:16px 18px;font:15px/1.5 system-ui,-apple-system,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.5)}' +
     '.consent p{margin:0 0 12px}.consent a{color:inherit;text-decoration:underline;text-underline-offset:3px}.consent .row{display:flex;gap:10px;flex-wrap:wrap}' +
-    '.consent button{font:600 14px/1 system-ui,-apple-system,sans-serif;padding:11px 16px;border-radius:3px;cursor:pointer;' +
+    '.consent button{font:600 14px/1 system-ui,-apple-system,sans-serif;min-height:44px;padding:0 18px;border-radius:3px;cursor:pointer;' +
     'border:1px solid var(--consent-accent,#c8882a);background:transparent;color:inherit}' +
     '.consent button.yes{background:var(--consent-accent,#c8882a);color:var(--consent-on-accent,#0e0b07)}' +
     '.consent button:focus-visible{outline:2px solid currentColor;outline-offset:2px}' +

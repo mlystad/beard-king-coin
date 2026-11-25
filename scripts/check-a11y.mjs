@@ -12,7 +12,7 @@
  * Set FONTS=offline to skip loading Google Fonts (measures with fallback fonts).
  *
  * hard     reflow, focus-indicator, focus-obscured, keyboard-trap, keyboard-unreachable, reduced-motion-animation
- * ratchet  axe-<rule>, target-24, rendered-font-floor  (legacy counts live in
+ * ratchet  axe-<rule>, target-44, rendered-font-floor  (legacy counts live in
  *          design-baseline.json under "browser"; they may fall, never rise)
  */
 import http from 'node:http';
@@ -24,7 +24,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const require = createRequire(import.meta.url);
 const WIDTHS = [1280, 320];
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
-const MIN_TARGET = 24;
+const MIN_TARGET = 44;
 const MIN_FONT = 14;
 
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.xml': 'application/xml', '.txt': 'text/plain', '.json': 'application/json' };
@@ -52,7 +52,9 @@ const inPage = {
     const small = [...document.querySelectorAll('a[href], button, input:not([type=hidden]), select, textarea, summary, [role=button]')]
       .filter(visible)
       .filter((e) => !e.closest('.hp, .sr-only, [hidden], [inert]') && !e.classList.contains('skip-link'))
-      .filter((e) => !(getComputedStyle(e).display === 'inline' && e.closest('p, li, small, td, figcaption, dd')))   // WCAG 2.5.8 inline exception
+      // WCAG 2.5.8 exempts a link that sits inside a sentence, with other words around it. A link that is all
+      // there is in its list item or table cell is a standalone target, however it is displayed.
+      .filter((e) => { const host = e.closest('p, li, small, td, th, figcaption, dd'); return !(getComputedStyle(e).display === 'inline' && host && (host.textContent || '').replace(/\s+/g, ' ').trim() !== (e.textContent || '').replace(/\s+/g, ' ').trim()); })
       .map((e) => { const r = e.getBoundingClientRect(); return { el: label(e), key: sel(e) + ' ' + text(e), w: Math.round(r.width), h: Math.round(r.height) }; })
       .filter((t) => t.w < minTarget || t.h < minTarget);
     const tiny = [...document.querySelectorAll('body *')]
@@ -117,7 +119,7 @@ export async function analyze(dir, { chromium, axeSource, launch, fonts = 'onlin
 
       const m = await page.evaluate(inPage.measure, { minTarget: MIN_TARGET, minFont: MIN_FONT });
       if (m.scrollW > width) add('reflow', 'hard', where, `page is ${m.scrollW}px wide in a ${width}px window: it needs sideways scrolling (WCAG 1.4.10)`);
-      for (const t of m.small) add('target-24', 'ratchet', where, `${t.el} is ${t.w}x${t.h}px, minimum ${MIN_TARGET}px (WCAG 2.5.8)`, t.key);
+      for (const t of m.small) add('target-44', 'ratchet', where, `${t.el} is ${t.w}x${t.h}px, minimum ${MIN_TARGET}px (WCAG 2.5.5 goal; 2.5.8 floor is 24px)`, t.key);
       for (const t of m.tiny) add('rendered-font-floor', 'ratchet', where, `${t.el} renders at ${t.px}px, minimum ${MIN_FONT}px`, t.key);
 
       if (width === WIDTHS[0]) {
